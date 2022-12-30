@@ -174,7 +174,7 @@ for epoch in range(20):
         d_lab_rand = d_lab[batchidx] - 1  # 1,2,3 ==> 0,1,2
 
         img_rand = T_transform(img_rand)
-
+####################################################################
         # Learn_Original
         catfeat, p_liveness, p_domain, re_catfeat, \
         p_liveness_fwt, \
@@ -183,12 +183,16 @@ for epoch in range(20):
 
         # original loss
         Loss_ls = criterion_ce(p_liveness.squeeze(), ls_lab_rand)
+        
         # ladain sample loss
         Loss_ls_hard = criterion_ce(p_liveness_hard.squeeze(), ls_lab_rand)
+        
         # disentangled loss
         Loss_cls_dm = criterion_ce(p_domain.squeeze(), d_lab_rand)
+        
         # reconstruction loss
         Loss_re = criterionMSE(catfeat, re_catfeat)
+        
         # fwt sample loss
         Loss_ls_fwt = criterion_ce(p_liveness_fwt.squeeze(), ls_lab_rand)
 
@@ -206,14 +210,18 @@ for epoch in range(20):
                   % (epoch, step, Loss_ls.item(), Loss_cls_dm.item(),
                      Loss_re.item(), Loss_ls_fwt.item(),
                      Loss_ls_hard.item()))
-
+####################################################################
         # Learn_AFT
         p_liveness_fwt, \
         f_liveness, f_liveness_fwt \
             = Fas_Net(img_rand, update_step="Learn_FWT")
 
+        # fwt sample loss
         Loss_ls_fwt = criterion_ce(p_liveness_fwt.squeeze(), ls_lab_rand)
-        Loss_dissimilar = torch.mean(criterion_cosine(f_liveness, f_liveness_fwt))        
+        
+        # fwt sample and live sample similarity (encourage the dissimilarity)
+        Loss_dissimilar = torch.mean(criterion_cosine(f_liveness, f_liveness_fwt))
+            
         Loss_all_fwt = Loss_ls_fwt + Loss_dissimilar
         optimizer_fwt.zero_grad()
         Loss_all_fwt.backward()
@@ -221,12 +229,14 @@ for epoch in range(20):
         if (step + 1) % log_step == 0:
             print('[epoch %d step %d] Update FWT ,Loss_ls_fwt %.4f ,Loss_ls_dis %.4f'
                   % (epoch, step,  Loss_ls_fwt.item(), Loss_dissimilar.item()))
-
+####################################################################
         # Learn_Adain
         p_liveness_hard \
             = Fas_Net(img_rand, update_step="Learn_Adain")
   
+        # ladain sample loss with (1 - ls_lab_rand) (encourage strong domain augmentation)
         Loss_ls_hard = criterion_ce(p_liveness_hard.squeeze(), 1 - ls_lab_rand)   
+        
         Loss_all_adain = Loss_ls_hard
         optimizer_adain.zero_grad()
         Loss_all_adain.backward()
@@ -234,7 +244,7 @@ for epoch in range(20):
         if (step + 1) % log_step == 0:
             print('[epoch %d step %d] Update LnAdaIN ,Loss_ls_hard %.4f'
                   % (epoch, step, Loss_ls_hard.item()))
-
+####################################################################
 
         if ((step + 1) % model_save_step == 0):
             mkdir(results_path)
