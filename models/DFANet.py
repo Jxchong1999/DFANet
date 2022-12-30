@@ -132,7 +132,7 @@ class Ad_LDCNet(nn.Module):
                        p_liveness_fwt, \
                        p_liveness_hard
             elif update_step == "Learn_FWT":
-                # update adain
+                # update Affine Feature Transform (AFT)
                 self.Backbone.requires_grad = False
                 self.LnessCsfier.requires_grad = False
                 self.DmainCsfier.requires_grad = False
@@ -150,13 +150,16 @@ class Ad_LDCNet(nn.Module):
                 f_domain_norm = torch.norm(f_domain, p=2, dim=1, keepdim=True).clamp(min=1e-12) ** 0.5 * (2) ** 0.5
                 f_domain = torch.div(f_domain, f_domain_norm)
 
+                # diverse features
                 f_liveness_fwt = self.FWT(f_liveness)
                 f_liveness_fwt_norm = torch.norm(f_liveness_fwt, p=2, dim=1, keepdim=True).clamp(min=1e-12) ** 0.5 * (
                     2) ** 0.5
                 f_liveness_fwt = torch.div(f_liveness_fwt, f_liveness_fwt_norm)
-
+                
+                # reconstruct diverse feature with seen domain
                 re_catfeat_fwt = self.FeDecoder(torch.cat([f_liveness_fwt, f_domain], 1))
 
+                # diverse feature disentanglement
                 f_liveness_fwt, p_liveness_fwt = self.LnessCsfier(re_catfeat_fwt)
                 f_liveness_fwt_norm = torch.norm(f_liveness_fwt, p=2, dim=1, keepdim=True).clamp(min=1e-12) ** 0.5 * (
                     2) ** 0.5
@@ -165,7 +168,7 @@ class Ad_LDCNet(nn.Module):
                 return p_liveness_fwt, f_liveness, f_liveness_fwt
 
             elif update_step == "Learn_Adain":
-                # update adain
+                # update Learnable adaIN
                 self.Backbone.requires_grad = False
                 self.LnessCsfier.requires_grad = False
                 self.DmainCsfier.requires_grad = False
@@ -181,6 +184,7 @@ class Ad_LDCNet(nn.Module):
                 f_domain_norm = torch.norm(f_domain, p=2, dim=1, keepdim=True).clamp(min=1e-12) ** 0.5 * (2) ** 0.5
                 f_domain = torch.div(f_domain, f_domain_norm)
 
+                # unseen domain
                 f_domain_hard = self.LnAdaIN(f_domain)
                 f_domain_hard_norm = torch.norm(f_domain_hard, p=2, dim=1, keepdim=True).clamp(min=1e-12) ** 0.5 * (
                     2) ** 0.5
