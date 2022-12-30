@@ -1,5 +1,5 @@
 
-from models.Adversarial_LDCN_fwt_adain import *
+from models.DFANet import *
 import numpy as np
 import sklearn.metrics as metrics
 from sklearn.metrics import roc_auc_score
