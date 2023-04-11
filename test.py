@@ -15,6 +15,8 @@ def Find_Optimal_Cutoff(TPR, FPR, threshold):
     point = [FPR[Youden_index], TPR[Youden_index]]
     return optimal_threshold, point
 
+def NormalizeData_torch(data):
+    return (data - torch.min(data)) / (torch.max(data) - torch.min(data))
 
 def NormalizeData(data):
     if np.min(data) ==np.max(data):
@@ -25,9 +27,11 @@ def NormalizeData(data):
     return  a
 
 
-test_dataset = "Oulu"
-live_path = '/shared/domain-generalization/'+test_dataset+'_images_live.npy'
-spoof_path = '/shared/domain-generalization/'+test_dataset+'_images_spoof.npy'
+test_dataset = "replay"
+model_path = "/var/mplab_share_data/jxchong/testing/fwt(i)/FASNet-"
+
+live_path =     '/var/mplab_share_data/domain-generalization/'+test_dataset+'_images_live.npy'
+spoof_path =    '/var/mplab_share_data/domain-generalization/'+test_dataset+'_images_spoof.npy'
 live_data = np.load(live_path)
 spoof_data = np.load(spoof_path)
 live_label = np.ones(len(live_data), dtype=np.int64)
@@ -47,13 +51,18 @@ data_loader = torch.utils.data.DataLoader(trainset,
 device_id = "cuda:0" 
 FASNet = Ad_LDCNet().to(device_id)
 
-model_path = "/home/Jxchong/adversarial/resultpath/fwt(both)(o)/FASNet-"
 
 print("model_path", model_path)
 print("live_path", live_path)
 print("spoof_path", spoof_path)
- 
-for epoch in range(1,80):
+
+import glob
+
+length = len(glob.glob(model_path + "*.tar"))
+record = [1,100,100,100,100]
+
+for epochs in range(1,length):
+    epoch = length - epochs
     FASNet_path = model_path + str(epoch) + ".tar"
 
 
@@ -105,10 +114,20 @@ for epoch in range(1,80):
 
     APCER = FP / (TN + FP)
     NPCER = FN / (FN + TP)
-    
+    if record[1]>((APCER + NPCER) / 2):
+            record[0]=epoch
+            record[1]=((APCER + NPCER) / 2)
+            record[2]=roc_auc_score(label_list, Total_score_list_cs)
+            record[3]=APCER
+            record[4]=NPCER
 
 
     print("Epoch", epoch, "CL",
           "ACER", np.round((APCER + NPCER) / 2, 4),
           "AUC", roc_auc_score(label_list, Total_score_list_cs))
 
+print("Epoch_"   + str(record[0])  +"_CL_",
+      "ACER_"    + str(record[1]) +
+      "_AUC_"     + str(record[2]) +
+      "_APCER_"   + str(record[3]) +
+      "_NPCER_"    + str(record[4]))

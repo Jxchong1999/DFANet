@@ -10,6 +10,8 @@ def mkdir(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
+def NormalizeData_torch(data):
+    return (data - torch.min(data)) / (torch.max(data) - torch.min(data))
 
 
 def get_data_loader(data_path="", data_path2="live", batch_size=5, shuffle=True, drop_last=True):
@@ -69,40 +71,40 @@ torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True 
 
 device_id = "cuda:0" 
-results_path = "/home/Jxchong/adversarial/resultpath/fwt(both)(o)"
+results_path = "/var/mplab_share_data/jxchong/testing/fwt(i)"
 
 # R_C_M R_O_M O_C_M R_C_O 
 # replay casia Oulu MSU  WW 
-dataset1 = "MSU"
-dataset2 = "casia"
-dataset3 = "replay"
+dataset1 = "casia"
+dataset2 = "Oulu"
+dataset3 = "MSU"
 
-batch_size = 11
+batch_size = 5
 log_step = 20
 model_save_step = 20
 model_save_epoch = 1
 save_index = 0
 
-live_path1 = '/home/Jxchong/domain-generalization/' + dataset1 + '_images_live.npy'
-live_path2 = '/home/Jxchong/domain-generalization/' + dataset2 + '_images_live.npy'
-live_path3 = '/home/Jxchong/domain-generalization/' + dataset3 + '_images_live.npy'
+live_path1 =    '/var/mplab_share_data/domain-generalization/' + dataset1 + '_images_live.npy'
+live_path2 =    '/var/mplab_share_data/domain-generalization/' + dataset2 + '_images_live.npy'
+live_path3 =    '/var/mplab_share_data/domain-generalization/' + dataset3 + '_images_live.npy'
 
-print_path1 = '/home/Jxchong/domain-generalization/' + dataset1 + '_print_images.npy'
-print_path2 = '/home/Jxchong/domain-generalization/' + dataset2 + '_print_images.npy'
-print_path3 = '/home/Jxchong/domain-generalization/' + dataset3 + '_print_images.npy'
+print_path1 =   '/var/mplab_share_data/domain-generalization/' + dataset1 + '_print_images.npy'
+print_path2 =   '/var/mplab_share_data/domain-generalization/' + dataset2 + '_print_images.npy'
+print_path3 =   '/var/mplab_share_data/domain-generalization/' + dataset3 + '_print_images.npy'
 
-replay_path1 = '/home/Jxchong/domain-generalization/' + dataset1 + '_replay_images.npy'
-replay_path2 = '/home/Jxchong/domain-generalization/' + dataset2 + '_replay_images.npy'
-replay_path3 = '/home/Jxchong/domain-generalization/' + dataset3 + '_replay_images.npy'
+replay_path1 =  '/var/mplab_share_data/domain-generalization/' + dataset1 + '_replay_images.npy'
+replay_path2 =  '/var/mplab_share_data/domain-generalization/' + dataset2 + '_replay_images.npy'
+replay_path3 =  '/var/mplab_share_data/domain-generalization/' + dataset3 + '_replay_images.npy'
 
 Fas_Net = Ad_LDCNet().to(device_id)
 criterion_ce = nn.CrossEntropyLoss().to(device_id)
 criterionMSE = torch.nn.MSELoss().to(device_id)
 criterion_cosine = nn.CosineSimilarity().to(device_id)
 
-optimizer_fas =     optim.AdamW(Fas_Net.parameters(), lr=1e-4, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-6, amsgrad=False)
-optimizer_fwt =     optim.AdamW(Fas_Net.parameters(), lr=1e-4, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-6, amsgrad=False)
-optimizer_adain =   optim.AdamW(Fas_Net.parameters(), lr=1e-4, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-6, amsgrad=False)
+optimizer_fas =     optim.AdamW(Fas_Net.parameters(), lr=1e-4, betas=(0.5, 0.8))#, eps=1e-08, weight_decay=1e-6, amsgrad=False)
+optimizer_fwt =     optim.AdamW(Fas_Net.parameters(), lr=1e-4, betas=(0.5, 0.8))#, eps=1e-08, weight_decay=1e-6, amsgrad=False)
+optimizer_adain =   optim.AdamW(Fas_Net.parameters(), lr=1e-4, betas=(0.5, 0.8))#, eps=1e-08, weight_decay=1e-6, amsgrad=False)
 
 Fas_Net.train()
 
@@ -141,7 +143,7 @@ T_transform = torch.nn.Sequential(
         T.CenterCrop(256),
 )
 
-for epoch in range(20):
+for epoch in range(5):
 
     for step in range(iternum):
         # ============ one batch extraction ============#
@@ -220,7 +222,7 @@ for epoch in range(20):
         Loss_ls_fwt = criterion_ce(p_liveness_fwt.squeeze(), ls_lab_rand)
         
         # fwt sample and live sample similarity (encourage the dissimilarity)
-        Loss_dissimilar = torch.mean(criterion_cosine(f_liveness, f_liveness_fwt))
+        Loss_dissimilar = 1+torch.mean(criterion_cosine(f_liveness, f_liveness_fwt))
             
         Loss_all_fwt = Loss_ls_fwt + Loss_dissimilar
         optimizer_fwt.zero_grad()

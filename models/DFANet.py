@@ -15,6 +15,10 @@ Reference: 'Single-side domain generalization for face anti-spoofing' (CVPR'20)
 def softplus(x):
     return torch.nn.functional.softplus(x, beta=100)
 
+'''
+Reference: 'Cross-domain few-shot classification via learned feature-wise transformation' (ICLR'20)
+- https://arxiv.org/abs/2001.08735
+'''
 
 class FWT(nn.Module):
     def __init__(self):
@@ -42,6 +46,14 @@ class conv3x3(nn.Module):
         out_normal = self.conv(x)
         return out_normal
 
+'''
+Reference: 'Domain Generalization with MixStyle' (ICLR'21)
+- https://arxiv.org/abs/2104.02008
+
+Reference: 'Arbitrary Style Transfer in Real-time with Adaptive Instance Normalization' (ICCV'17)
+- https://arxiv.org/abs/1703.06868
+'''
+
 
 class LearnableAdaIN(nn.Module):
     def __init__(self):
@@ -63,8 +75,8 @@ class LearnableAdaIN(nn.Module):
                        (2, 3)) + 0.000000023) / (x.shape[2] * x.shape[3]))
 
     def forward(self, x):
-        sigma_y = torch.randn(x.size()[:2]).cuda()
-        mu_y = torch.randn(x.size()[:2]).cuda()
+        sigma_y = torch.randn(x.size()[:2]).cuda(0)
+        mu_y = torch.randn(x.size()[:2]).cuda(0)
         # sigma_y==>[sigma_y,sigma_y,sigma_y] based on batch size
         for i in range(0, x.size(0)):
             sigma_y[i] = self.sigma_y
