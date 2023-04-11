@@ -37,6 +37,7 @@ If you use the DFANet, please cite the paper:
 
 ## Contact us
 We are students from MPLAB at National Tsing Hua University.  
+Chong, Jun-Xiong <jxchong99@gmail.com> email me if you have any questions.
 Huang, Pei-Kai <alwayswithme@gapp.nthu.edu.tw>  
 Ni, Hui-Yu <huiyu8794@gmail.com>  
-Chong, Jun-Xiong <jxchong99@gmail.com>
+Chen, Tzu-Hsien <gapp111062570@gapp.nthu.edu.tw> 
