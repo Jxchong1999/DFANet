@@ -5,3 +5,6 @@
 ## Network Architecture
 ![Screenshot](figure/disentanglement_and_reconstruction.png)
 
+![Screenshot](figure/AFT.png)
+
+![Screenshot](figure/ADL.png)
