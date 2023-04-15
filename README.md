@@ -32,7 +32,13 @@ Step 2: run `python test.py` to test the DFANet model.
 If you use the DFANet, please cite the paper:
 
 ```
-
+@inproceedings{huang2022towards,
+  title={Towards Diverse Liveness Feature Representation and Domain Expansion for Cross-Domain Face Anti-Spoofing},
+  author={Huang, Pei-Kai and Chong, Jun-Xiong and Ni, Hui-Yu and Chen, Tzu-Hsien and Hsu, Chiou-Ting},
+  booktitle={2023 IEEE International Conference on Multimedia and Expo (ICME)}, 
+  year={2023},
+  organization={IEEE}
+}
 ```
 
 ## Contact us
