@@ -29,7 +29,7 @@ Step 2: run `python test.py` to test the DFANet model.
 
 ## Citation
 
-If you use the DFANet, please cite the paper:
+If you use the DFANet, please cite the paper, thank you:
 
 ```
 @inproceedings{huang2022towards,
